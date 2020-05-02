@@ -31,6 +31,8 @@ ______________________________________________________________________
 
 -__Other Board Based on ATMega2560 / ATMega328 / ATMega168__
 
+____________________________________________________________________________________________________
+
 ## Parameters
 
 You have parameters in the header file __parameters.h__ that you can change values to configure __GHOST_TRAP_SIMPLE.ino__
@@ -50,6 +52,8 @@ You have parameters in the header file __parameters.h__ that you can change valu
 | MAX_DEGREE_1 | 0-180 | Set max value of servo motor 1 in degree |
 | MIN_DEGREE_2 | 0-180 | Set min value of servo motor 2 in degree |
 | MAX_DEGREE_2 | 0-180 | Set max value of servo motor 2 in degree |
+
+____________________________________________________________________________________________________
 
 ## Bargraph
 
