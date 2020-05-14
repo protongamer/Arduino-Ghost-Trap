@@ -52,6 +52,8 @@ You have parameters in the header file __parameters.h__ that you can change valu
 | MAX_DEGREE_1 | 0-180 | Set max value of servo motor 1 in degree |
 | MIN_DEGREE_2 | 0-180 | Set min value of servo motor 2 in degree |
 | MAX_DEGREE_2 | 0-180 | Set max value of servo motor 2 in degree |
+| SPIRIT_HALLOWEEN_MOD | Comment / Uncomment | Set a pulse to activate Spirit Halloween electronics(for the motor system), and disable servo motor |
+| REMOVABLE_CARTRIDGE | Comment / Uncomment | The Power switch will be a fake power up for Ghost trap which need to be separated with a connector(Uncomment), otherwise it will be a power switch(Comment) |
 
 ____________________________________________________________________________________________________
 
