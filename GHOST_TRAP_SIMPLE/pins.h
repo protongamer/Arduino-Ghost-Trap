@@ -21,14 +21,16 @@
 
 #define SERVO_MOTOR_1     9
 #define SERVO_MOTOR_2     10
-//#define BUT1              4 (don't need it)
+#define BUT1              5 
 #define BUT2              4
 
 #define SOUND_READ        A0
 
 //HW PWM (don't change pins)
-#define FLASH1            5
+//#define FLASH1            5
 #define FLASH2            6
 #define FLASH3            11 //blue led
+
+
 
 

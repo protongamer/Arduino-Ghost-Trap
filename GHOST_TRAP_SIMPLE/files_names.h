@@ -7,3 +7,5 @@
 #define OPEN            5
 #define STOP            6
 #define IDLE_SEQ        7
+#define BOOT_ON         8
+#define BOOT_OFF        9

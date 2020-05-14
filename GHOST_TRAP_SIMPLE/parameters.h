@@ -31,6 +31,11 @@
 #define MIN_DEGREE_2          120
 #define MAX_DEGREE_2          0
 
+//If spirit halloween, --> no servo motor
+//#define SPIRIT_HALLOWEEN_MOD
+
+//if ghost trap with removable cartridge
+#define REMOVABLE_CARTRIDGE
 
 //for ISR
 //#define TIMER_DISPLAY     0
