@@ -23,7 +23,12 @@ Servo motor_1, motor_2;
 
 //Pins
 uint8_t pinsOut[] = { PIN_B1, PIN_B2, PIN_B3, PIN_B4, PIN_B5, PIN_C1, PIN_C2, RED_LED, SMOKE_PIN};
+
+#ifdef REMOVABLE_CARTRIDGE
 uint8_t pinsIn[] = { BUT1, BUT2 };
+#else
+uint8_t pinsIn[] = { BUT2 };
+#endif
 
 //Bargraph Pins
 uint8_t bargraphPins[] = { PIN_B1, PIN_B2, PIN_B3, PIN_B4, PIN_B5, }; //pour le bargraph
@@ -83,7 +88,7 @@ void setup() {
   }
 
   for (uint8_t i = 0; i < sizeof(pinsIn); i++) {
-    pinMode(pinsIn[i], INPUT_PULLUP);
+    pinMode(pinsIn[i], INPUT);
   }
 
   digitalWrite(SMOKE_PIN, LOW);
@@ -154,19 +159,19 @@ ISR(TIMER1_OVF_vect) {
 void loop() {
 
 #ifdef REMOVABLE_CARTRIDGE
-if(!digitalRead(BUT1)){
+if(digitalRead(BUT1)){
   trapStuff();//call function
 }else{
   digitalWrite(RED_LED, LOW);
   delay(250);
 }
 
-if(!but1State && !digitalRead(BUT1)){ //if user power up(fake power up of course)
+if(!but1State && digitalRead(BUT1)){ //if user power up(fake power up of course)
   mp3_play(BOOT_ON); //play it ♪♪♪
   delay(100);
   but1State = true;
 }
-else if(but1State && digitalRead(BUT1)){ //if user power down
+else if(but1State && !digitalRead(BUT1)){ //if user power down
   mp3_play(BOOT_OFF); //play it ♪♪♪
   delay(100);
   but1State = false;
@@ -200,9 +205,9 @@ void trapStuff(void) {
   }
 
 
-  if (!digitalRead(BUT2)) {
+  if (digitalRead(BUT2)) {
     delay(50); //debounce filter
-    while (!digitalRead(BUT2)) {
+    while (digitalRead(BUT2)) {
       #ifdef USE_SOFTWARE_SERIAL
       Serial.println(digitalRead(BUT2));
       #endif
@@ -226,8 +231,11 @@ void trapStuff(void) {
     digitalWrite(SERVO_MOTOR_2, LOW);
     #endif
 
-    //analogWrite(FLASH1, 50);
+    #ifndef REMOVABLE_CARTRIDGE
+    analogWrite(FLASH1, 50);
+    #endif
     analogWrite(FLASH2, 50);
+    
     #ifdef USE_SOFTWARE_SERIAL
     Serial.println("Flashers");
     #endif
@@ -247,7 +255,7 @@ void trapStuff(void) {
         ledTimer = millis();
       }
 
-      if (!digitalRead(BUT2)) { //start capture ghost sequence
+      if (digitalRead(BUT2)) { //start capture ghost sequence
         while(!mp3IsPlaying()) { //if is playing
           mp3_stop(); //stop it
           delay(100);
@@ -262,7 +270,9 @@ void trapStuff(void) {
         }
 
         for (uint8_t i = 0; i < 255; i += 5) {
-          //analogWrite(FLASH1, i);
+          #ifndef REMOVABLE_CARTRIDGE
+          analogWrite(FLASH1, i);
+          #endif
           analogWrite(FLASH2, i);
           delay(5);
         }
@@ -277,7 +287,9 @@ void trapStuff(void) {
 
     while (!mp3IsPlaying()) { //while sound playing
       //add unstable flicker effect here(on flashers)
-      //analogWrite(FLASH1, random(FLICKER_MIN, FLICKER_MAX));
+      #ifndef REMOVABLE_CARTRIDGE
+      analogWrite(FLASH1, random(FLICKER_MIN, FLICKER_MAX));
+      #endif
       analogWrite(FLASH2, random(FLICKER_MIN, FLICKER_MAX));
       delay(5);
     }
@@ -298,12 +310,17 @@ void trapStuff(void) {
     #endif
     digitalWrite(RED_LED, LOW);
     for (uint8_t i = 255; i > 0; i -= 5) {
-      //analogWrite(FLASH1, i);
+      #ifndef REMOVABLE_CARTRIDGE
+      analogWrite(FLASH1, i);
+      #endif
       analogWrite(FLASH2, i);
       delay(5);
     }
-    //analogWrite(FLASH1, 0);
+    #ifndef REMOVABLE_CARTRIDGE
+    analogWrite(FLASH1, 0);
+    #endif
     analogWrite(FLASH2, 0);
+    
     #ifdef USE_SOFTWARE_SERIAL
     Serial.println("close");
     #endif
@@ -350,7 +367,7 @@ void trapStuff(void) {
     uint32_t timer;
     timer = millis();
 
-    while (digitalRead(BUT2)) {
+    while (!digitalRead(BUT2)) {
 
 
       //if sound finished -> play it again
