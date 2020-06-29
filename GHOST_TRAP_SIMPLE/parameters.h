@@ -34,7 +34,7 @@
 //If spirit halloween, --> no servo motor
 //#define SPIRIT_HALLOWEEN_MOD
 
-//if ghost trap with removable cartridge
+//if ghost trap with removable cartridge(then pin 5 is reserved for BUT1, otherwise it's reserved for FLASH 1
 #define REMOVABLE_CARTRIDGE
 
 //for ISR
