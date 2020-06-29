@@ -27,7 +27,7 @@
 #define SOUND_READ        A0
 
 //HW PWM (don't change pins)
-//#define FLASH1            5
+#define FLASH1            5 //depend on REMOVABLE_CARTRIDGE
 #define FLASH2            6
 #define FLASH3            11 //blue led
 
