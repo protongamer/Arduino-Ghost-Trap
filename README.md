@@ -39,7 +39,7 @@ You have parameters in the header file __parameters.h__ that you can change valu
 
 | Parameter | Range values | Descritpion |
 | --------- | ------------ | ----------- |
-| USE_SOFTWARE_SERIAL | Comment / Uncomment | Control Mp3 Dfrobot module by using software serial or harware serial(by using harware serial, default debug will be unused) |
+| USE_SOFTWARE_SERIAL(obsolete) | Comment / Uncomment | Control Mp3 Dfrobot module by using software serial or harware serial(by using harware serial, default debug will be unused) |
 | VOLUME | 0-30 | Set Mp3 module volume |
 | FLICKER_MAX | 0-255 | Set max bright random value for flickering effect |
 | FLICKER_MIN | 0-255 | Set min bright random value for flickering effect |
