@@ -1,7 +1,7 @@
 //Parameters
 
 
-#define USE_SOFTWARE_SERIAL
+
 
 
 #define VOLUME            30
@@ -26,15 +26,15 @@
 
 //For servo motor
 
-#define MIN_DEGREE_1          0
+/*#define MIN_DEGREE_1          0
 #define MAX_DEGREE_1          120
 #define MIN_DEGREE_2          120
-#define MAX_DEGREE_2          0
+#define MAX_DEGREE_2          0*/
 
 //If spirit halloween, --> no servo motor
 //#define SPIRIT_HALLOWEEN_MOD
 
-//if ghost trap with removable cartridge(then pin 5 is reserved for BUT1, otherwise it's reserved for FLASH 1
+//if ghost trap with removable cartridge
 #define REMOVABLE_CARTRIDGE
 
 //for ISR

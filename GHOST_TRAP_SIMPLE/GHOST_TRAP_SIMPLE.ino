@@ -4,6 +4,7 @@
 #include <SoftwareSerial.h>
 #include <DFPlayer_Mini_Mp3.h>
 #include <Servo.h>
+#include <EEPROM.h>
 
 #include "parameters.h"
 #include "files_names.h"
@@ -23,12 +24,7 @@ Servo motor_1, motor_2;
 
 //Pins
 uint8_t pinsOut[] = { PIN_B1, PIN_B2, PIN_B3, PIN_B4, PIN_B5, PIN_C1, PIN_C2, RED_LED, SMOKE_PIN};
-
-#ifdef REMOVABLE_CARTRIDGE
 uint8_t pinsIn[] = { BUT1, BUT2 };
-#else
-uint8_t pinsIn[] = { BUT2 };
-#endif
 
 //Bargraph Pins
 uint8_t bargraphPins[] = { PIN_B1, PIN_B2, PIN_B3, PIN_B4, PIN_B5, }; //pour le bargraph
@@ -36,11 +32,15 @@ uint8_t bargraphPins[] = { PIN_B1, PIN_B2, PIN_B3, PIN_B4, PIN_B5, }; //pour le 
 uint8_t lvl = 0;
 uint8_t counterCom = 0;
 
+uint8_t mn_deg_1, mn_deg_2, mx_deg_1, mx_deg_2;
+
 bool flag = false;
 bool trapOpen = false;
 bool bargraphCom = 0;
 
 bool but1State = false;
+
+
 
 //int moy[100];
 
@@ -59,20 +59,22 @@ bool mp3IsPlaying(void);
 void setup() {
 
   Serial.begin (9600);
+  #ifdef USE_SOFTWARE_SERIAL
   mySerial.begin (9600);
+  #endif
   /*Serial.println("hi");
     Serial.println(TCCR1A,BIN);
     Serial.println(TCCR1B,BIN);
     Serial.println(TIMSK1,BIN);*/
 
   //Set servo motor
-  #ifndef SPIRIT_HALLOWEEN_MOD
+#ifndef SPIRIT_HALLOWEEN_MOD
   motor_1.attach(SERVO_MOTOR_1);
   motor_2.attach(SERVO_MOTOR_2);
-  #else
+#else
   pinMode(SERVO_MOTOR_1, OUTPUT);
   pinMode(SERVO_MOTOR_2, OUTPUT);
-  #endif
+#endif
 
   //motor_1.write(MIN_DEGREE_1);
   //motor_2.write(MIN_DEGREE_2);
@@ -88,8 +90,27 @@ void setup() {
   }
 
   for (uint8_t i = 0; i < sizeof(pinsIn); i++) {
-    pinMode(pinsIn[i], INPUT);
+    pinMode(pinsIn[i], INPUT_PULLUP);
   }
+
+
+  mn_deg_1 = EEPROM.read(0);
+  mn_deg_2 = EEPROM.read(1);
+  mx_deg_1 = EEPROM.read(2);
+  mx_deg_2 = EEPROM.read(3);
+
+  if (mn_deg_1 > 180)
+    EEPROM.write(0, 180);
+
+  if (mn_deg_2 > 180)
+    EEPROM.write(1, 180);
+
+  if (mx_deg_1 > 180)
+    EEPROM.write(2, 180);
+
+  if (mx_deg_2 > 180)
+    EEPROM.write(3, 180);
+
 
   digitalWrite(SMOKE_PIN, LOW);
 
@@ -101,6 +122,66 @@ void setup() {
   mp3_play(1); //boot sound
   delay(100);
 
+  /////////////////////////////////////////////////////////////
+  //Config mode
+  if (!digitalRead(BUT2))
+  {
+    while (!digitalRead(BUT2))
+    {
+      digitalWrite(RED_LED, !digitalRead(RED_LED));
+      delay(250);
+    }
+    delay(500);
+    while (digitalRead(BUT2))
+    {
+
+      uint16_t localVal = map(analogRead(POT_READ), 0, 1023, 0, 180);
+      mn_deg_1 = localVal;
+      mn_deg_2 = 180 - localVal;
+
+      motor_1.write(mn_deg_1);
+      motor_2.write(mn_deg_2);
+      delay(100);
+    }
+    while (!digitalRead(BUT2))
+    {
+      digitalWrite(RED_LED, !digitalRead(RED_LED));
+      delay(250);
+    }
+
+    delay(1000);
+
+    while (digitalRead(BUT2))
+    {
+
+      uint16_t localVal = map(analogRead(POT_READ), 0, 1023, 0, 180);
+      mx_deg_1 = localVal;
+      mx_deg_2 = 180 - localVal;
+
+      motor_1.write(mx_deg_1);
+      motor_2.write(mx_deg_2);
+      delay(100);
+    }
+
+    while (!digitalRead(BUT2));
+
+    for (int i = 0; i < 6; i++)
+    {
+      digitalWrite(RED_LED, !digitalRead(RED_LED));
+      delay(500);
+    }
+    digitalWrite(RED_LED, 0);
+
+    EEPROM.write(0, mn_deg_1);
+    EEPROM.write(1, mn_deg_2);
+    EEPROM.write(2, mx_deg_1);
+    EEPROM.write(3, mx_deg_2);
+
+
+  }
+  /////////////////////////////////////////////////////////////
+  motor_1.write(mn_deg_1);
+  motor_2.write(mn_deg_2);
 
 
 
@@ -159,23 +240,23 @@ ISR(TIMER1_OVF_vect) {
 void loop() {
 
 #ifdef REMOVABLE_CARTRIDGE
-if(digitalRead(BUT1)){
-  trapStuff();//call function
-}else{
-  digitalWrite(RED_LED, LOW);
-  delay(250);
-}
+  if (!digitalRead(BUT1)) {
+    trapStuff();//call function
+  } else {
+    digitalWrite(RED_LED, LOW);
+    delay(250);
+  }
 
-if(!but1State && digitalRead(BUT1)){ //if user power up(fake power up of course)
-  mp3_play(BOOT_ON); //play it ♪♪♪
-  delay(100);
-  but1State = true;
-}
-else if(but1State && !digitalRead(BUT1)){ //if user power down
-  mp3_play(BOOT_OFF); //play it ♪♪♪
-  delay(100);
-  but1State = false;
-}
+  if (!but1State && !digitalRead(BUT1)) { //if user power up(fake power up of course)
+    mp3_play(BOOT_ON); //play it ♪♪♪
+    delay(100);
+    but1State = true;
+  }
+  else if (but1State && digitalRead(BUT1)) { //if user power down
+    mp3_play(BOOT_OFF); //play it ♪♪♪
+    delay(100);
+    but1State = false;
+  }
 
 
 #else
@@ -205,46 +286,43 @@ void trapStuff(void) {
   }
 
 
-  if (digitalRead(BUT2)) {
+  if (!digitalRead(BUT2)) {
     delay(50); //debounce filter
-    while (digitalRead(BUT2)) {
-      #ifdef USE_SOFTWARE_SERIAL
+    while (!digitalRead(BUT2)) {
+#ifdef USE_SOFTWARE_SERIAL
       Serial.println(digitalRead(BUT2));
-      #endif
+#endif
     };//wait user to unpush button
     trapOpen = true;
     digitalWrite(RED_LED, HIGH);
     //play trap open/idle sequence
     //(here)
     if (mp3IsPlaying()) { //no sound played ?
-    mp3_play(OPEN); //play it ♪♪♪
-    delay(250);
+      mp3_play(OPEN); //play it ♪♪♪
+      delay(250);
     }
-    #ifndef SPIRIT_HALLOWEEN_MOD
-    motor_1.write(MAX_DEGREE_1);
-    motor_2.write(MAX_DEGREE_2);
-    #else
+#ifndef SPIRIT_HALLOWEEN_MOD
+    motor_1.write(mx_deg_1);
+    motor_2.write(mx_deg_2);
+#else
     digitalWrite(SERVO_MOTOR_1, HIGH);
     digitalWrite(SERVO_MOTOR_2, HIGH);
     delay(5);
     digitalWrite(SERVO_MOTOR_1, LOW);
     digitalWrite(SERVO_MOTOR_2, LOW);
-    #endif
+#endif
 
-    #ifndef REMOVABLE_CARTRIDGE
-    analogWrite(FLASH1, 50);
-    #endif
+    //analogWrite(FLASH1, 50);
     analogWrite(FLASH2, 50);
-    
-    #ifdef USE_SOFTWARE_SERIAL
+#ifdef USE_SOFTWARE_SERIAL
     Serial.println("Flashers");
-    #endif
+#endif
     //open servo motor
 
     while (trapOpen) { //while trapOpen is true don't leave sequence effect
-      #ifdef USE_SOFTWARE_SERIAL
+#ifdef USE_SOFTWARE_SERIAL
       Serial.println("idle");
-      #endif
+#endif
       while (mp3IsPlaying()) { //if no sound played
         Serial.println("play idle seq");
         mp3_play(IDLE_SEQ);
@@ -255,24 +333,22 @@ void trapStuff(void) {
         ledTimer = millis();
       }
 
-      if (digitalRead(BUT2)) { //start capture ghost sequence
-        while(!mp3IsPlaying()) { //if is playing
+      if (!digitalRead(BUT2)) { //start capture ghost sequence
+        while (!mp3IsPlaying()) { //if is playing
           mp3_stop(); //stop it
           delay(100);
         }
-        #ifdef USE_SOFTWARE_SERIAL
+#ifdef USE_SOFTWARE_SERIAL
         Serial.println("capture");
-        #endif
+#endif
         //play capture ghost sound
-        while(mp3IsPlaying()){ //not playing ?
-        mp3_play(CAPT_SEQ); //play it ( o) (o )
-        delay(250);
+        while (mp3IsPlaying()) { //not playing ?
+          mp3_play(CAPT_SEQ); //play it ( o) (o )
+          delay(250);
         }
 
         for (uint8_t i = 0; i < 255; i += 5) {
-          #ifndef REMOVABLE_CARTRIDGE
-          analogWrite(FLASH1, i);
-          #endif
+          //analogWrite(FLASH1, i);
           analogWrite(FLASH2, i);
           delay(5);
         }
@@ -287,9 +363,7 @@ void trapStuff(void) {
 
     while (!mp3IsPlaying()) { //while sound playing
       //add unstable flicker effect here(on flashers)
-      #ifndef REMOVABLE_CARTRIDGE
-      analogWrite(FLASH1, random(FLICKER_MIN, FLICKER_MAX));
-      #endif
+      //analogWrite(FLASH1, random(FLICKER_MIN, FLICKER_MAX));
       analogWrite(FLASH2, random(FLICKER_MIN, FLICKER_MAX));
       delay(5);
     }
@@ -297,46 +371,41 @@ void trapStuff(void) {
     //play close trap sound (here)
     mp3_play(CLOSE);
     delay(50);
-    
-    #ifndef SPIRIT_HALLOWEEN_MOD
-    motor_1.write(MIN_DEGREE_1);
-    motor_2.write(MIN_DEGREE_2);
-    #else
+
+#ifndef SPIRIT_HALLOWEEN_MOD
+    motor_1.write(mn_deg_1);
+    motor_2.write(mn_deg_2);
+#else
     digitalWrite(SERVO_MOTOR_1, HIGH);
     digitalWrite(SERVO_MOTOR_2, HIGH);
     delay(5);
     digitalWrite(SERVO_MOTOR_1, LOW);
     digitalWrite(SERVO_MOTOR_2, LOW);
-    #endif
+#endif
     digitalWrite(RED_LED, LOW);
     for (uint8_t i = 255; i > 0; i -= 5) {
-      #ifndef REMOVABLE_CARTRIDGE
-      analogWrite(FLASH1, i);
-      #endif
+      //analogWrite(FLASH1, i);
       analogWrite(FLASH2, i);
       delay(5);
     }
-    #ifndef REMOVABLE_CARTRIDGE
-    analogWrite(FLASH1, 0);
-    #endif
+    //analogWrite(FLASH1, 0);
     analogWrite(FLASH2, 0);
-    
-    #ifdef USE_SOFTWARE_SERIAL
+#ifdef USE_SOFTWARE_SERIAL
     Serial.println("close");
-    #endif
+#endif
     delay(2000);
-    
-    #ifndef SPIRIT_HALLOWEEN_MOD
+
+#ifndef SPIRIT_HALLOWEEN_MOD
     //disable motor for a moment
     //motor_1.detach();
     //motor_2.detach();
-    
+
     //Prefer use this method(true disable servo motor process)
     TCCR1B |= _BV(CS10);
     TCCR1A = 1;
     TIFR1 &= ~_BV(OCF1A); //detach function forgot this line, why ?
     TIMSK1 &=  ~_BV(OCIE1A) ;
-    #endif
+#endif
     //add level
 
 
@@ -344,9 +413,9 @@ void trapStuff(void) {
     mp3_play(BEEP1);
     delay(10);
     TIMSK1 |= _BV(TOIE1); //enable timer interrupt
-    #ifdef USE_SOFTWARE_SERIAL
+#ifdef USE_SOFTWARE_SERIAL
     Serial.println("beep");
-    #endif
+#endif
     for (uint8_t i = 1; i <= sizeof(bargraphPins) * 2; i++) { //fill bargraph
       bargraphLevel(i);
       delay(50);
@@ -359,15 +428,15 @@ void trapStuff(void) {
     //stop smoke
     digitalWrite(SMOKE_PIN, LOW);
     //start spark sound(here)
-    #ifdef USE_SOFTWARE_SERIAL
+#ifdef USE_SOFTWARE_SERIAL
     Serial.println("spark seq");
-    #endif
+#endif
     int max = 0;
     int min = 32000;
     uint32_t timer;
     timer = millis();
 
-    while (!digitalRead(BUT2)) {
+    while (digitalRead(BUT2)) {
 
 
       //if sound finished -> play it again
@@ -398,13 +467,13 @@ void trapStuff(void) {
       }
 
       //add spark effect(analogRead ?)
-      #ifdef USE_SOFTWARE_SERIAL
+#ifdef USE_SOFTWARE_SERIAL
       Serial.print(20 * log10(val));
       Serial.print("\t");
       Serial.print(min);
       Serial.print("\t");
       Serial.println(max);
-      #endif
+#endif
 
       if (20 * log10(val) > max) {
         analogWrite(FLASH3, map(analogRead(SOUND_READ), max, max + MAX_SPARK, 0, 255));
@@ -427,7 +496,7 @@ void trapStuff(void) {
     TIMSK1 &= ~_BV(TOIE1);
 
     //enable servo motor again
-    #ifndef SPIRIT_HALLOWEEN_MOD
+#ifndef SPIRIT_HALLOWEEN_MOD
     //motor_1.attach(SERVO_MOTOR_1);
     //motor_2.attach(SERVO_MOTOR_2);
 
@@ -435,7 +504,7 @@ void trapStuff(void) {
     TCCR1B &= ~_BV(CS10);
     TCCR1A = 0;
     TIFR1 |= _BV(OCF1A); //detach function forgot this line, why ?
-    #endif
+#endif
     TIMSK1 |=  _BV(OCIE1A) ;
     digitalWrite(RED_LED, LOW);
   }

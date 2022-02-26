@@ -2,7 +2,7 @@
 
 #define PIN_C1        2
 #define PIN_C2        3
-#define PIN_B1        A1
+#define PIN_B1        7
 #define PIN_B2        A2
 #define PIN_B3        A3
 #define PIN_B4        A4
@@ -25,9 +25,10 @@
 #define BUT2              4
 
 #define SOUND_READ        A0
+#define POT_READ          A1
 
 //HW PWM (don't change pins)
-#define FLASH1            5 //depend on REMOVABLE_CARTRIDGE
+//#define FLASH1            5
 #define FLASH2            6
 #define FLASH3            11 //blue led
 
