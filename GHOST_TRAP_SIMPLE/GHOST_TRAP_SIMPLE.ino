@@ -286,9 +286,9 @@ void trapStuff(void) {
   }
 
 
-  if (!digitalRead(BUT2)) {
+  if (digitalRead(BUT2)) {
     delay(50); //debounce filter
-    while (!digitalRead(BUT2)) {
+    while (digitalRead(BUT2)) {
 #ifdef USE_SOFTWARE_SERIAL
       Serial.println(digitalRead(BUT2));
 #endif
@@ -521,4 +521,3 @@ void trapStuff(void) {
 bool mp3IsPlaying(void) {
   return digitalRead(MP3_PLAYING_PIN);
 }
-
