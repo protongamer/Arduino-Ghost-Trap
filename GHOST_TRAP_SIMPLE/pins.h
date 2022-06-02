@@ -11,7 +11,7 @@
 
 //Other pins
 
-#define TX_PIN            7
+#define TX_PIN            1
 #define RX_PIN            0 //don't need to wire it
 
 #define MP3_PLAYING_PIN   8
@@ -28,9 +28,9 @@
 #define POT_READ          A1
 
 //HW PWM (don't change pins)
-//#define FLASH1            5
-#define FLASH2            6
-#define FLASH3            11 //blue led
+//#define FLASH1            6
+#define FLASH2            11
+#define FLASH3            5 //blue led
 
 
 
