@@ -124,15 +124,15 @@ void setup() {
 
   /////////////////////////////////////////////////////////////
   //Config mode
-  if (!digitalRead(BUT2))
+  if (digitalRead(BUT2))
   {
-    while (!digitalRead(BUT2))
+    while (digitalRead(BUT2))
     {
       digitalWrite(RED_LED, !digitalRead(RED_LED));
       delay(250);
     }
     delay(500);
-    while (digitalRead(BUT2))
+    while (!digitalRead(BUT2))
     {
 
       uint16_t localVal = map(analogRead(POT_READ), 0, 1023, 0, 180);
@@ -143,7 +143,7 @@ void setup() {
       motor_2.write(mn_deg_2);
       delay(100);
     }
-    while (!digitalRead(BUT2))
+    while (digitalRead(BUT2))
     {
       digitalWrite(RED_LED, !digitalRead(RED_LED));
       delay(250);
@@ -151,7 +151,7 @@ void setup() {
 
     delay(1000);
 
-    while (digitalRead(BUT2))
+    while (!digitalRead(BUT2))
     {
 
       uint16_t localVal = map(analogRead(POT_READ), 0, 1023, 0, 180);
@@ -163,7 +163,7 @@ void setup() {
       delay(100);
     }
 
-    while (!digitalRead(BUT2));
+    while (digitalRead(BUT2));
 
     for (int i = 0; i < 6; i++)
     {
