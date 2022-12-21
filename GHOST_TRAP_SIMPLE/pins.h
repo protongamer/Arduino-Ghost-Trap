@@ -8,6 +8,9 @@
 #define PIN_B4        A4
 #define PIN_B5        A5
 
+//Angle Setup pins
+#define PIN_RV1       A6
+#define PIN_RV2       A7
 
 //Other pins
 
@@ -30,7 +33,6 @@
 #define FLASH1            5 //depend on REMOVABLE_CARTRIDGE
 #define FLASH2            6
 #define FLASH3            11 //blue led
-
 
 
 
