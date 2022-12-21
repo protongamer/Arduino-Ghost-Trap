@@ -36,6 +36,8 @@ uint8_t bargraphPins[] = { PIN_B1, PIN_B2, PIN_B3, PIN_B4, PIN_B5, }; //pour le 
 uint8_t lvl = 0;
 uint8_t counterCom = 0;
 
+uint16_t servoMinVal1, servoMaxVal1, servoMinVal2, servoMaxVal2;
+
 bool flag = false;
 bool trapOpen = false;
 bool bargraphCom = 0;
@@ -74,8 +76,7 @@ void setup() {
   pinMode(SERVO_MOTOR_2, OUTPUT);
   #endif
 
-  //motor_1.write(MIN_DEGREE_1);
-  //motor_2.write(MIN_DEGREE_2);
+
 
 #ifdef USE_SOFTWARE_SERIAL
   mp3_set_serial (mySerial);  //set Serial for DFPlayer-mini mp3 module
@@ -95,6 +96,37 @@ void setup() {
 
   pinMode(MP3_PLAYING_PIN, INPUT);
 
+  delay(500);
+  
+  ////////////////////////////////////////
+  //Read servo cfg (RV1 & RV2)
+
+  uint32_t medVal = 0;
+
+  for(int i = 0; i < 500; i++)
+  {
+    medVal += analogRead(PIN_RV1);
+  }
+
+  medVal = medVal / 500;
+
+  servoMinVal1 = map(medVal, 0, 1023, 0, SERVO_MAX_DEGREE);
+  servoMinVal2 = map(medVal, 0, 1023, SERVO_MAX_DEGREE, 0);
+
+  medVal = 0;
+
+  for(int i = 0; i < 500; i++)
+  {
+    medVal += analogRead(PIN_RV2);
+  }
+
+  medVal = medVal / 500;
+
+  servoMaxVal2 = map(medVal, 0, 1023, 0, SERVO_MAX_DEGREE);
+  servoMaxVal1 = map(medVal, 0, 1023, SERVO_MAX_DEGREE, 0);
+
+  ////////////////////////////////////////
+  
 
   mp3_set_volume (VOLUME); //set mp3 volume
 
@@ -221,8 +253,8 @@ void trapStuff(void) {
     delay(250);
     }
     #ifndef SPIRIT_HALLOWEEN_MOD
-    motor_1.write(MAX_DEGREE_1);
-    motor_2.write(MAX_DEGREE_2);
+    motor_1.write(servoMaxVal1);
+    motor_2.write(servoMaxVal2);
     #else
     digitalWrite(SERVO_MOTOR_1, HIGH);
     digitalWrite(SERVO_MOTOR_2, HIGH);
@@ -299,8 +331,8 @@ void trapStuff(void) {
     delay(50);
     
     #ifndef SPIRIT_HALLOWEEN_MOD
-    motor_1.write(MIN_DEGREE_1);
-    motor_2.write(MIN_DEGREE_2);
+    motor_1.write(servoMinVal1);
+    motor_2.write(servoMinVal2);
     #else
     digitalWrite(SERVO_MOTOR_1, HIGH);
     digitalWrite(SERVO_MOTOR_2, HIGH);
@@ -452,4 +484,3 @@ void trapStuff(void) {
 bool mp3IsPlaying(void) {
   return digitalRead(MP3_PLAYING_PIN);
 }
-
