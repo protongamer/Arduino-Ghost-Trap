@@ -26,10 +26,15 @@
 
 //For servo motor
 
+#define SERVO_MAX_DEGREE      120 //Max angle value according to the motor's characteristic as a REFERENCE VALUE !
+
+/*
+//Depreciated
 #define MIN_DEGREE_1          0
 #define MAX_DEGREE_1          120
 #define MIN_DEGREE_2          120
 #define MAX_DEGREE_2          0
+*/
 
 //If spirit halloween, --> no servo motor
 //#define SPIRIT_HALLOWEEN_MOD
