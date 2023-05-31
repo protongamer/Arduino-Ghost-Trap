@@ -61,7 +61,9 @@ bool mp3IsPlaying(void);
 void setup() {
 
   Serial.begin (9600);
+  #ifdef USE_SOFTWARE_SERIAL
   mySerial.begin (9600);
+  #endif
   /*Serial.println("hi");
     Serial.println(TCCR1A,BIN);
     Serial.println(TCCR1B,BIN);
